@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <!-- 引包 这个都懂把 不多说了  -->
+    <script src="jquery.min.js"></script>
+
+    <!-- qrcode 的js文件 生成二维码需要 -->
+    <script src="qrcode.min.js"></script>
+
+</head>
+
+<body>
+
+    <!-- 这个元素用来承载生成的二维码 不显示 -->
+    <div id="qrcode" style="display: none"></div>
+
+    <!-- 点击这个按钮之后下载图片 -->
+    <button id="download"> 下载图片 </button>
+
+    <!-- canvas 标签 主要用来进行图形的绘制-->
+    <canvas id="canvas" width="500" height="300"></canvas>
+
+    <script>
+        let canvas = document.querySelector("#canvas");
+        canvas.width = canvas.width * 1;
+        canvas.height = canvas.height * 1;
+        let qr = document.getElementById("qrcode");
+        let ctx = canvas.getContext("2d");
+        let img = new Image();
+        // 这里的第一张图片就是可以是你们的海报 这里注意绘制的顺序 我们要手动控制
+        img.src = "bg.jpg";
+        img.setAttribute("crossOrigin", 'Anonymous')
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0, 500, 300);
+            // 对二维码进行初始化
+            let qrcode = new QRCode(qr, {
+                width: 100,
+                height: 100,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+            });
+            // 为二维码设置内容	
+            qrcode.makeCode("http://www.baidu.com");
+            // 我们的qrcode生成二维码之后也会有一个canvas对象我们获取到这个元素
+            let base64 = qr.firstChild.toDataURL("image/png", 1);
+            // 这里的image只能在onload里面绘制 在外面就会被覆盖了 因为优先加载完毕就会优先绘制 然后就被之后绘制的海报背景遮挡了
+            let shareQr = new Image();
+            // 设置base64编码格式值
+            shareQr.src = base64;
+            shareQr.setAttribute("crossOrigin", 'Anonymous')
+            shareQr.onload = function() {
+                // 绘制图像  就是绘制二维码到我们自己写的canvas中去
+                ctx.drawImage(shareQr, 395, 195, 100, 100);
+            };
+            // 绘制字体
+            ctx.font = "14px 楷体";
+            ctx.fillText("www.baidu.com", 350, 150);
+        };
+
+        // 下载
+        document.getElementById("download").onclick = function() {
+            let a = document.createElement("a");
+            // 设置地址
+            a.href = canvas.toDataURL("image/png", 1);
+            // 设置下载名称
+            a.download = "test.jpg";
+            // 触发点击事件
+            a.click();
+        }
+    </script>
+
+</body>
+
+</html>
